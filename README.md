@@ -22,6 +22,14 @@
 
 ---
 
+## 0.1 Web Demo 实测截图
+
+YOLOv11s 单模型在示例图片上的实时检测效果（置信度 83.3%，MPS 推理）：
+
+![Web Demo 检测效果](docs/screenshots/web-demo-detection.png)
+
+---
+
 ## 1. 是什么 / 不是什幺
 
 | 我们做 ✅ | 我们不做 ❌ |
