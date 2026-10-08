@@ -81,7 +81,7 @@ temp/
 .cache/
 
 # ----- Data (large binaries NOT in git) -----
-data/
+data/*
 !data/.gitkeep
 datasets/private/
 *.parquet
