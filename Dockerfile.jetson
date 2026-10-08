@@ -1,0 +1,89 @@
+# syntax=docker/dockerfile:1.7
+# =====================================================
+# SkyGuard - Jetson Edge Deployment Image (Sprint 11)
+#
+# Built on NVIDIA L4T (Linux for Tegra) base images which ship
+# CUDA, cuDNN, and TensorRT matched to the JetPack release.
+# This image is intended for Jetson Nano / Xavier / Orin / Orin NX.
+#
+# Build (on a Jetson host or via QEMU buildx):
+#   docker build -f Dockerfile.jetson -t skyguard:jetson-l4t-r35 .
+#
+# Run (with GPU + power management access):
+#   docker run --runtime nvidia --network host --privileged \
+#     -v /etc/nv_tegra_release:/etc/nv_tegra_release:ro \
+#     -v /sys/class/thermal:/sys/class/thermal:ro \
+#     -v $(pwd)/models:/app/models:ro \
+#     -v $(pwd)/config:/app/config:ro \
+#     -v $(pwd)/data:/app/data \
+#     skyguard:jetson-l4t-r35
+#
+# Base image tags: see https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-tensorrt
+#   r35.x = JetPack 5.x (Xavier / Orin)
+#   r32.x = JetPack 4.x (Nano / TX2)
+# =====================================================
+
+ARG L4T_VERSION=r35.4.1
+ARG L4T_IMAGE=nvcr.io/nvidia/l4t-tensorrt
+
+# ---- Runtime image (single-stage; L4T base already has CUDA/TRT/cuDNN) ----
+FROM ${L4T_IMAGE}:${L4T_VERSION} AS runtime
+
+# Disable Python bytecode caching and buffering for logs
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    SKYGUARD_ENV=production \
+    SKYGUARD_EDGE__TARGET=jetson
+
+# Install runtime system dependencies.
+# - libgl1 / libglib2.0-0 : OpenCV runtime
+# - ffmpeg                : video demuxing (av backend)
+# - tini                   : PID 1 signal handling
+# - curl                   : healthcheck
+# - nvpmodel / jetson_clocks ship with L4T (in /usr/sbin)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3-pip \
+        python3-dev \
+        libgl1 \
+        libglib2.0-0 \
+        libsm6 \
+        libxext6 \
+        libxrender1 \
+        ffmpeg \
+        tini \
+        curl \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --shell /bin/bash skyguard
+
+# Upgrade pip + install Python dependencies.
+# Jetson wheels for torch / numpy are provided by NVIDIA's l4t-pytorch base;
+# this Dockerfile layers SkyGuard's pure-Python + pip-friendly deps on top.
+# For JetPack 5.x the base image already includes: torch, torchvision,
+# numpy, opencv, onnx, tensorrt. We pin the remainder via requirements.
+WORKDIR /opt/skyguard
+COPY requirements.jetson.txt ./
+RUN pip3 install --upgrade pip wheel setuptools \
+    && pip3 install -r requirements.jetson.txt
+
+# Copy application source
+WORKDIR /app
+COPY src/ /app/src/
+COPY config/ /app/config/
+COPY scripts/ /app/scripts/
+
+# Create writable directories for logs / data
+RUN mkdir -p /app/logs /app/data /app/models \
+    && chown -R skyguard:skyguard /app
+
+USER skyguard
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -fsS http://localhost:8000/health || exit 1
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["python3", "-m", "skyguard", "edge", "info"]

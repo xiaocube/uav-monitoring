@@ -1,0 +1,104 @@
+# =====================================================
+# SkyGuard 追加训练配置 - DroneTrack 小目标数据集
+# 基于 drone-v1-2 模型,用 DroneTrack 数据集追加训练
+# 目标:提升远距离小目标检测能力
+#
+# 关键优化:
+#   1. imgsz=1280:高分辨率输入,保留小目标特征
+#   2. mosaic+copy_paste:小目标数据增强
+#   3. scale=0.9:大范围多尺度训练
+#   4. batch=8:imgsz=1280 时减小 batch 防止 OOM
+#   5. lr0=0.0005:微调用较小学习率,防止遗忘
+# =====================================================
+
+training:
+  enabled: true
+
+  # 追加训练:基于已训练的 drone-v1-2 模型
+  # YOLO 会保留 backbone 权重,重新初始化检测头(1类→2类)
+  base_model: "/Users/panyanming/Desktop/无人机反制/models/trained/drone-v1-2/weights/best.pt"
+
+  # DroneTrack 数据集
+  data: "/Users/panyanming/Desktop/无人机反制/DroneTrack.yolov8/data.yaml"
+
+  # 输出目录(绝对路径,确保输出到项目目录)
+  project: "/Users/panyanming/Desktop/无人机反制/models/trained"
+  name: "drone-v2-dronetrack"
+
+  # 高分辨率输入(小目标优化核心参数)
+  imgsz: 1280
+
+  # 训练轮数(追加训练不需要太多)
+  epochs: 50
+
+  # batch=8(imgsz=1280 时显存占用大,MPS 下需减小)
+  batch: 8
+
+  # 优化器
+  optimizer: "AdamW"
+  lr0: 0.0005                     # 微调用较小学习率
+  lrf: 0.01
+  momentum: 0.937
+  weight_decay: 0.0005
+
+  # 数据增强(小目标优化)
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  degrees: 10.0                   # 增大旋转(无人机各角度出现)
+  translate: 0.2                  # 增大平移
+  scale: 0.9                      # 大范围多尺度(关键:模拟不同距离)
+  shear: 2.0
+  perspective: 0.0
+  flipud: 0.0
+  fliplr: 0.5
+  mosaic: 1.0                     # mosaic 拼接(小目标增强利器)
+  mixup: 0.15                     # 轻度 mixup
+  copy_paste: 0.3                 # 复制粘贴(增加小目标样本密度)
+
+  # 训练控制
+  patience: 15                    # 早停
+  save: true
+  save_period: 10
+  device: "auto"                  # auto → MPS on Mac
+  workers: 4
+  exist_ok: false
+  pretrained: true
+  seed: 42
+  deterministic: true
+  single_cls: false               # 2 类:bird + uav
+  rect: false
+  cos_lr: true                    # 余弦退火(微调更稳定)
+  close_mosaic: 10                # 最后 10 epoch 关闭 mosaic
+  amp: true
+  fraction: 1.0
+  dropout: 0.0
+
+  # 验证
+  val: true
+  iou: 0.6
+  max_det: 300
+
+  plots: true
+
+  # 实验跟踪
+  tracking:
+    backend: "none"               # 追加训练用 none,避免 MLflow 依赖
+    experiment_name: "skyguard-dronetrack-finetune"
+    run_name: ""
+    tags:
+      project: "skyguard"
+      task: "object-detection"
+      dataset: "dronetrack"
+      type: "finetune"
+
+  # 导出配置
+  export:
+    formats:
+      - "onnx"
+    imgsz: 1280
+    half: true
+    int8: false
+    simplify: true
+    opset: 12
+    workspace: 4

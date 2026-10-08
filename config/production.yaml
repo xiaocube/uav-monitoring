@@ -1,0 +1,35 @@
+# Overrides for production deployment (Sprint 12 - Industrial Grade)
+app:
+  env: "production"
+
+logging:
+  level: "INFO"
+  colorize: false
+  serialize_json: true
+
+compute:
+  device: "auto"
+  benchmark: true
+  deterministic: false
+  matmul_precision: "high"
+
+web:
+  cors_origins: []            # configure via reverse proxy
+
+database:
+  enabled: true
+  host: "postgres"
+  port: 5432
+  database: "skyguard"
+  username: "skyguard"
+  password: ""                # set via SKYGUARD_DATABASE__PASSWORD
+  pool_size: 20
+  echo: false
+
+security:
+  enabled: true
+  api_key: ""                 # MUST set via SKYGUARD_SECURITY__API_KEY
+  rate_limit_enabled: true
+  rate_limit_per_minute: 120
+  gzip_enabled: true
+  gzip_min_size: 500

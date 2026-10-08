@@ -1,0 +1,82 @@
+# ============================================================
+# SkyGuard UAV Detection - 第4版训练配置
+# ============================================================
+# 数据集: data/skyguard-v2 (5821 train + 1664 val)
+# 基础模型: yolo11s.pt (9.5M 参数)
+# 目标: 恢复 v1-2 旧模型的精度水平 (mAP50 > 0.97)
+#
+# 相比 v3 的关键修正:
+#   1. lr0: 0.01 → 0.001 (降10倍, 精细收敛)
+#   2. optimizer: auto → AdamW (稳定小目标训练)
+#   3. degrees: 0 → 5.0 (恢复角度增强)
+#   4. shear: 0 → 2.0 (恢复剪切增强)
+#   5. mixup: 0 → 0.1 (恢复混合增强)
+#   6. batch: 8 → 16 (梯度更稳定)
+#   7. iou: 0.7 → 0.6 (NMS 更严格, 减少误检)
+# ============================================================
+
+# 模型与数据
+model: "yolo11s.pt"
+data: "data/skyguard-v2/dataset.yaml"
+
+# 输出目录
+project: "runs/detect/train"
+name: "uav-v4"
+exist_ok: false
+
+# 图像
+imgsz: 640
+
+# 训练
+epochs: 50              # v1-2 在 38 epoch 达到最佳, 50 足够
+patience: 15            # 早停
+batch: 16               # M4 16GB @640 可支持
+workers: 0              # Mac MPS 建议 0
+device: "mps"
+
+# 优化器 (关键修正)
+optimizer: "AdamW"
+lr0: 0.001              # 关键: 降10倍
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+cos_lr: true
+warmup_epochs: 3
+warmup_momentum: 0.8
+warmup_bias_lr: 0.1
+
+# 数据增强 (关键修正: 恢复几何增强)
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 5.0            # 关键: 恢复
+translate: 0.1
+scale: 0.5
+shear: 2.0              # 关键: 恢复
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.5
+mosaic: 1.0
+mixup: 0.1              # 关键: 恢复
+copy_paste: 0.0
+close_mosaic: 10
+
+# 验证 (关键修正)
+val: true
+iou: 0.6                # 关键: 降回 0.6
+max_det: 300
+
+# 保存
+save: true
+save_period: 5          # 每 5 epoch 存一次
+resume: false
+pretrained: true
+seed: 42
+deterministic: true
+
+# 其他
+amp: true
+fraction: 1.0
+dropout: 0.0
+verbose: true
+plots: true

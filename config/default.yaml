@@ -1,0 +1,78 @@
+# =====================================================
+# SkyGuard - default configuration
+# All values can be overridden by:
+#   1) environment variables (SKYGUARD_*)
+#   2) environment-specific YAML (development.yaml / production.yaml)
+# =====================================================
+
+app:
+  name: "SkyGuard"
+  version: "0.1.0"
+  env: "development"          # development | staging | production
+  owner: "SkyGuard Engineering"
+
+paths:
+  data_dir: "./data"
+  model_dir: "./models"
+  log_dir: "./logs"
+  config_dir: "./config"
+
+compute:
+  device: "auto"              # auto | cpu | cuda | mps
+  num_workers: 4
+  benchmark: false            # enable torch.backends.cudnn.benchmark
+  deterministic: true         # slower but reproducible
+  matmul_precision: "high"    # "highest" | "high" | "medium"  (PyTorch 2+)
+
+logging:
+  level: "INFO"               # DEBUG | INFO | WARNING | ERROR
+  rotation: "20 MB"
+  retention: "14 days"
+  colorize: true
+  serialize_json: false
+  enqueue: true               # thread-safe logging (important for multi-camera)
+
+detection:
+  enabled: true               # Sprint 2: YOLO detection
+  model_name: "yolov8n.pt"    # COCO-pretrained; replaced by own model in Sprint 4
+  imgsz: 640
+  conf: 0.25
+  iou: 0.45
+  # Filter to COCO IDs for airplane(5), bird(14), kite(38).
+  # Empty list = all classes. Use env var SKYGUARD_DETECTION__CLASSES=[5,14,38]
+  classes: []
+
+tracking:
+  enabled: false              # Sprint 7
+  algorithm: "bytetrack"
+  track_buffer: 30
+
+ptz:
+  enabled: false              # Sprint 8
+  protocol: "onvif"           # onvif | visca | pelco_d
+
+web:
+  enabled: false              # Sprint 9
+  host: "0.0.0.0"
+  port: 8000
+  cors_origins:
+    - "http://localhost:5173"
+
+database:
+  enabled: false              # Sprint 10
+  url: "postgresql://skyguard:skyguard@localhost:5432/skyguard"
+  pool_size: 10
+  echo: false
+
+edge:
+  target: "cpu"               # cpu | jetson | coreml
+
+security:
+  enabled: false              # Sprint 12: set true in production
+  api_key: ""                 # set via SKYGUARD_SECURITY__API_KEY
+  api_key_header: "X-API-Key"
+  rate_limit_enabled: true
+  rate_limit_per_minute: 60
+  trusted_hosts: []
+  gzip_enabled: true
+  gzip_min_size: 500

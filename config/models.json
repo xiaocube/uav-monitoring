@@ -1,0 +1,101 @@
+{
+  "models": {
+    "v4": {
+      "name": "v4 (YOLOv11s)",
+      "path": "models/current/best_v4.pt",
+      "architecture": "YOLOv11s",
+      "dataset": "skyguard-v2",
+      "mAP50": 0.9670,
+      "precision": 0.9525,
+      "recall": 0.9564,
+      "fps": 14.0,
+      "size_mb": 18,
+      "classes": ["uav"],
+      "class_map": {"0": "uav"},
+      "description": "当前生产模型,精度最高的单模型",
+      "tags": ["recommended", "production"]
+    },
+    "v3": {
+      "name": "v3 (YOLOv11s)",
+      "path": "models/current/best_v3.pt",
+      "architecture": "YOLOv11s",
+      "dataset": "skyguard-v2",
+      "mAP50": 0.9663,
+      "precision": 0.9535,
+      "recall": 0.9560,
+      "fps": 29.3,
+      "size_mb": 18,
+      "classes": ["uav"],
+      "class_map": {"0": "uav"},
+      "description": "v4的前一版本,速度更快",
+      "tags": ["production"]
+    },
+    "v1-2": {
+      "name": "v1-2 (YOLOv11n)",
+      "path": "archive/v1-dronetrack-20260720/训练结果/drone-v1-2/weights/best.pt",
+      "architecture": "YOLOv11n",
+      "dataset": "skyguard-v1",
+      "mAP50": 0.9768,
+      "precision": 0.9768,
+      "recall": 0.9414,
+      "fps": 27.8,
+      "size_mb": 3,
+      "classes": ["drone"],
+      "class_map": {"0": "uav"},
+      "description": "YOLOv11n架构,最小巧的模型,不同数据集提供互补",
+      "tags": ["archive", "lightweight"]
+    },
+    "v8-v1": {
+      "name": "v8-v1 (YOLOv8n)",
+      "path": "archive/v1-dronetrack-20260720/训练结果/drone-v1/weights/best.pt",
+      "architecture": "YOLOv8n",
+      "dataset": "skyguard-v1",
+      "mAP50": 0.9640,
+      "fps": 40.2,
+      "size_mb": 3,
+      "classes": ["drone"],
+      "class_map": {"0": "uav"},
+      "description": "初代YOLOv8模型,速度最快",
+      "tags": ["archive", "yolov8"]
+    },
+    "v8-v2": {
+      "name": "v8-v2 (YOLOv8n, 2类)",
+      "path": "archive/v1-dronetrack-20260720/训练结果/drone-v2-dronetrack/weights/best.pt",
+      "architecture": "YOLOv8n",
+      "dataset": "DroneTrack",
+      "mAP50": 0.7395,
+      "fps": 26.8,
+      "size_mb": 3,
+      "classes": ["bird", "uav"],
+      "class_map": {"0": "bird", "1": "uav"},
+      "filter_classes": ["bird"],
+      "description": "2类模型(bird+uav),需要过滤bird类",
+      "tags": ["archive", "yolov8", "multiclass"]
+    }
+  },
+  "ensembles": {
+    "yolo11-2": {
+      "name": "YOLOv11 双模型融合 (v4+v3)",
+      "models": ["v4", "v3"],
+      "weights": {"v4": 1.0, "v3": 1.0},
+      "description": "平衡方案,2模型融合,识别率100%,FPS 17.9",
+      "tags": ["recommended", "balanced"]
+    },
+    "yolo11-3": {
+      "name": "YOLOv11 三模型融合 (v4+v3+v1-2)",
+      "models": ["v4", "v3", "v1-2"],
+      "weights": {"v4": 1.0, "v3": 1.0, "v1-2": 0.8},
+      "description": "精度优先,3模型融合,识别率100%,FPS 12.7",
+      "tags": ["accuracy"]
+    },
+    "all-5": {
+      "name": "全模型融合 (5个模型)",
+      "models": ["v4", "v3", "v1-2", "v8-v1", "v8-v2"],
+      "weights": {"v4": 1.0, "v3": 1.0, "v1-2": 0.8, "v8-v1": 0.5, "v8-v2": 0.4},
+      "description": "最大融合,5模型,识别率100%,FPS 9.1",
+      "tags": ["maximum"]
+    }
+  },
+  "default_model": "v4",
+  "default_ensemble": "yolo11-2"
+}

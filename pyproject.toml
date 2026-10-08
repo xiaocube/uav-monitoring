@@ -1,0 +1,159 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "skyguard"
+version = "1.0.0"
+description = "SkyGuard - AI Low-Altitude Intelligent Monitoring Platform"
+readme = "README.md"
+requires-python = ">=3.9,<3.13"
+license = { text = "Proprietary" }
+authors = [
+    { name = "SkyGuard Engineering" },
+]
+keywords = ["ai", "computer-vision", "yolo", "drone", "monitoring", "tracking"]
+classifiers = [
+    "Development Status :: 5 - Production/Beta",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "torch>=2.1.0,<2.4.0",
+    "torchvision>=0.16.0,<0.19.0",
+    "opencv-python>=4.8.0,<5.0.0",
+    "Pillow>=10.0.0,<11.0.0",
+    "ultralytics>=8.1.0,<9.0.0",
+    "lap>=0.4.0",
+    "numpy>=1.24.0,<2.0.0",
+    "pandas>=2.0.0,<3.0.0",
+    "pyyaml>=6.0",
+    "tqdm>=4.66.0",
+    "pydantic>=2.5.0,<3.0.0",
+    "pydantic-settings>=2.1.0,<3.0.0",
+    "loguru>=0.7.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.7.0",
+    "typer>=0.9.0",
+    "av>=11.0.0",
+    "imageio>=2.31.0",
+    "imageio-ffmpeg>=0.4.9",
+    "albumentations>=1.3.0",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "websockets>=12.0",
+    "sqlalchemy>=2.0.0",
+    "psutil>=5.9.0",
+    "prometheus-client>=0.19.0",
+    "slowapi>=0.1.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "pytest-asyncio>=0.23.0",
+    "black>=23.12.0",
+    "isort>=5.13.0",
+    "flake8>=7.0.0",
+    "flake8-bugbear>=23.12.0",
+    "mypy>=1.8.0",
+    "pre-commit>=3.6.0",
+    "httpx>=0.25.0",
+]
+postgres = [
+    "psycopg2-binary>=2.9.0",
+]
+jetson = [
+    "jetson-stats>=4.2.0",
+]
+dataset = [
+    "label-studio-sdk>=0.0.30",
+    "roboflow>=1.1.0",
+    "dvc[gs,s3]>=3.0.0",
+]
+
+[project.scripts]
+skyguard = "skyguard.main:cli"
+skyguard-verify = "skyguard.utils.environment:verify_cli"
+skyguard-bench = "skyguard.utils.device:benchmark_cli"
+
+[project.urls]
+Homepage = "https://github.com/skyguard/skyguard"
+Repository = "https://github.com/skyguard/skyguard"
+Documentation = "https://github.com/skyguard/skyguard/docs"
+Changelog = "https://github.com/skyguard/skyguard/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+  | docs
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["skyguard"]
+src_paths = ["src", "tests"]
+
+[tool.mypy]
+python_version = "3.10"
+mypy_path = "src"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+show_error_codes = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--showlocals",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "gpu: marks tests that require GPU/MPS",
+    "asyncio: marks tests as async tests",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["skyguard"]
+omit = [
+    "*/tests/*",
+    "*/__main__.py",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+fail_under = 60

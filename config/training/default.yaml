@@ -1,0 +1,96 @@
+# =====================================================
+# SkyGuard YOLO Training Configuration
+# Sprint 4: Model training on custom drone dataset
+# =====================================================
+
+training:
+  enabled: true
+
+  # Base model (pretrained checkpoint to fine-tune from)
+  base_model: "yolov8n.pt"        # yolov8n | yolov8s | yolov8m | yolov8l | yolov8x
+
+  # Dataset path (YOLO data.yaml)
+  data: "data/skyguard-v1/processed/data.yaml"
+
+  # Output directory for training artifacts
+  project: "models/trained"
+  name: "skyguard-v1"             # experiment name
+
+  # Image size
+  imgsz: 640
+
+  # Training epochs
+  epochs: 100
+
+  # Batch size (-1 = auto)
+  batch: 16
+
+  # Optimizer
+  optimizer: "AdamW"              # SGD | Adam | AdamW | auto
+  lr0: 0.001                      # initial learning rate
+  lrf: 0.01                       # final learning rate fraction (lr0 * lrf)
+  momentum: 0.937                 # SGD momentum / Adam beta1
+  weight_decay: 0.0005
+
+  # Augmentation ( Ultralytics built-in + our offline aug)
+  hsv_h: 0.015                    # HSV Hue augmentation
+  hsv_s: 0.7                      # HSV Saturation augmentation
+  hsv_v: 0.4                      # HSV Value augmentation
+  degrees: 5.0                    # rotation (+/- degrees)
+  translate: 0.1                  # translation (+/- fraction)
+  scale: 0.5                      # scale (+/- gain)
+  shear: 2.0                      # shear (+/- degrees)
+  perspective: 0.0                # perspective (+/- fraction)
+  flipud: 0.0                     # flip up-down probability
+  fliplr: 0.5                     # flip left-right probability
+  mosaic: 1.0                     # mosaic augmentation probability
+  mixup: 0.1                      # mixup augmentation probability
+  copy_paste: 0.0                 # segment copy-paste probability
+
+  # Advanced
+  patience: 20                    # early stopping patience (epochs)
+  save: true                      # save checkpoints
+  save_period: 10                 # save checkpoint every N epochs
+  device: "auto"                  # auto | cpu | cuda | mps
+  workers: 4                      # dataloader workers
+  exist_ok: false                 # overwrite existing experiment
+  pretrained: true                # use pretrained weights
+  seed: 42                        # random seed
+  deterministic: true             # deterministic training
+  single_cls: false               # treat as single-class dataset
+  rect: false                     # rectangular training
+  cos_lr: false                   # cosine learning rate schedule
+  close_mosaic: 10                # disable mosaic for last N epochs
+  amp: true                       # Automatic Mixed Precision
+  fraction: 1.0                   # fraction of dataset to train on
+  dropout: 0.0                    # dropout rate (classifier only)
+
+  # Validation
+  val: true
+  iou: 0.6                        # NMS IoU threshold for validation
+  max_det: 300                    # maximum detections per image
+
+  # Plotting
+  plots: true                     # save plots during training
+
+  # Experiment tracking
+  tracking:
+    backend: "mlflow"             # mlflow | wandb | tensorboard | none
+    experiment_name: "skyguard-drone-detection"
+    run_name: ""                  # auto-generated if empty
+    tags:
+      project: "skyguard"
+      task: "object-detection"
+      dataset: "skyguard-v1"
+
+  # Export configuration (applied after best model is trained)
+  export:
+    formats:
+      - "onnx"
+      - "engine"                  # TensorRT (requires GPU + TensorRT)
+    imgsz: 640
+    half: true                     # FP16
+    int8: false                    # INT8 quantization
+    simplify: true                 # simplify ONNX graph
+    opset: 12                      # ONNX opset version
+    workspace: 4                   # TensorRT workspace (GB)

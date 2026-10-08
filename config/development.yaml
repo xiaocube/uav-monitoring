@@ -1,0 +1,13 @@
+# Overrides for local development
+app:
+  env: "development"
+
+logging:
+  level: "DEBUG"
+  colorize: true
+  serialize_json: false
+
+compute:
+  device: "auto"
+  benchmark: false
+  deterministic: false

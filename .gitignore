@@ -1,0 +1,147 @@
+# =============================================================
+# SkyGuard - AI Low-Altitude Intelligent Monitoring Platform
+# Python / AI / Data / Logs / OS / IDE
+# =============================================================
+
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ----- Virtualenv -----
+.venv/
+venv/
+env/
+ENV/
+conda-meta/
+
+# ----- Testing / Coverage -----
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.tox/
+.nox/
+
+# ----- Type checking / Lint -----
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+.flake8
+.isort.cfg.bak
+
+# ----- IDE -----
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+*.swp
+*.swo
+.DS_Store
+
+# ----- Environment / Secrets -----
+.env
+.env.local
+.env.*.local
+*.pem
+secrets/
+credentials/
+
+# ----- SkyGuard Runtime -----
+logs/*.log
+logs/*.log.*
+logs/archive/
+tmp/
+temp/
+.cache/
+
+# ----- Data (large binaries NOT in git) -----
+data/
+!data/.gitkeep
+datasets/private/
+*.parquet
+*.h5
+*.hdf5
+*.pkl
+
+# ----- Historical archives (not in git) -----
+archive/
+runs/
+
+# ----- Model artifacts (tracked via DVC/LFS, not git) -----
+models/current/
+models/pretrained/*.pt
+models/pretrained/*.onnx
+models/pretrained/*.engine
+models/trained/*.pt
+models/trained/*.onnx
+models/trained/*.engine
+models/trained/*.weights
+!models/.gitkeep
+# model weight symlinks at repo root
+/yolo11s.pt
+/yolov8n.pt
+
+# ----- Personal analysis docs (not part of the repo) -----
+分析产出/
+
+# ----- Media (not in git) -----
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.flv
+*.webm
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.tiff
+!docs/**/*.png
+!docs/**/*.jpg
+# ...but keep web-demo assets & paper charts (referenced by source/docs)
+!web-demo/public/samples/*.jpg
+!web-demo/src/assets/*.png
+!web-demo/src/assets/*.svg
+!paper/charts/*.png
+
+# ----- Frontend build deps -----
+web-demo/node_modules/
+
+# ----- MLflow / DVC / W&B -----
+mlruns/
+mlartifacts/
+wandb/
+.dvc/cache
+.dvc/tmp
+.dvc/plots
+.dvc/plots.lock
+
+# ----- Docker -----
+.docker/
+docker-data/

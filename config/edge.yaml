@@ -1,0 +1,72 @@
+# =====================================================
+# SkyGuard - Edge deployment configuration (Sprint 11)
+#
+# Used by `skyguard edge deploy` and the EdgeDeploymentManager.
+# Override via environment variables with SKYGUARD_EDGE_ prefix,
+# or layer this file on top of default.yaml / production.yaml.
+# =====================================================
+
+edge:
+  # Target deployment backend.
+  #   cpu     -> any host (dev / CI fallback)
+  #   jetson  -> NVIDIA Jetson (Nano / Xavier / Orin)
+  #   coreml  -> Apple Silicon (reserved for future)
+  target: "jetson"
+
+  # ---- TensorRT engine build ----
+  trt:
+    # Default inference precision. Options: fp32 | fp16 | int8
+    # FP16 is the recommended default for Jetson (best speed/accuracy trade-off).
+    # INT8 requires calib_data_dir and Xavier/Orin family hardware.
+    precision: "fp16"
+    imgsz: 640
+    max_batch_size: 1
+    workspace_gb: 4
+    dynamic_batch: false
+
+    # INT8 calibration. Point at a directory of representative images.
+    # Required when precision == int8.
+    calib_data_dir: "./data/calibration"
+    calib_cache: "./models/calib.cache"
+
+  # ---- Power management (Jetson only) ----
+  power:
+    # Automatically set the recommended nvpmodel mode on deploy.
+    auto_set_power_mode: true
+    # Automatically enable jetson_clocks (max frequency on all cores).
+    auto_enable_jetson_clocks: true
+    # Force a specific power mode instead of the recommended one.
+    # null = use hardware recommendation; 0 = MAXN; 1 = 10W; etc.
+    force_mode: null
+
+  # ---- Edge API server ----
+  api:
+    host: "0.0.0.0"
+    port: 8000
+    workers: 1
+
+  # ---- Health monitoring ----
+  monitor:
+    # Polling interval (seconds) for the `skyguard edge watch` loop.
+    interval_sec: 2.0
+    # Temperature thresholds (Celsius).
+    thermal_warning_c: 75.0
+    thermal_critical_c: 90.0
+    # Emit a warning when memory usage exceeds this percentage.
+    memory_warning_percent: 90
+
+  # ---- Model paths (relative to project root) ----
+  models:
+    # Source ONNX model used to build the TensorRT engine.
+    onnx_path: "./models/best.onnx"
+    # Output / cached TensorRT engine path.
+    engine_path: "./models/best_fp16.engine"
+
+  # ---- Docker / runtime hints (informational) ----
+  runtime:
+    # Which Docker base image to use for Jetson builds.
+    l4t_image: "nvcr.io/nvidia/l4t-tensorrt"
+    l4t_tag: "r35.4.1"
+    # Whether to run the container in privileged mode (needed for
+    # nvpmodel / jetson_clocks / thermal sysfs access).
+    privileged: true

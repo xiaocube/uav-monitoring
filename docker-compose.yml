@@ -1,0 +1,104 @@
+version: "3.9"
+
+# =====================================================
+# SkyGuard - Full Stack Docker Compose (Sprint 12)
+#
+# Services:
+#   skyguard  - FastAPI application server
+#   postgres  - PostgreSQL database (with pgvector optional)
+#   redis     - Redis cache + rate limiter backend
+#
+# Usage:
+#   docker-compose up -d                    # start all
+#   docker-compose up -d skyguard           # start app only
+#   docker-compose logs -f skyguard         # tail logs
+#   docker-compose down                     # stop all
+# =====================================================
+
+services:
+  skyguard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: skyguard:${TAG:-latest}
+    container_name: skyguard-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - SKYGUARD_ENV=production
+      - SKYGUARD_DATABASE__ENABLED=true
+      - SKYGUARD_DATABASE__HOST=postgres
+      - SKYGUARD_DATABASE__PORT=5432
+      - SKYGUARD_DATABASE__USERNAME=skyguard
+      - SKYGUARD_DATABASE__PASSWORD=${DB_PASSWORD:-skyguard}
+      - SKYGUARD_DATABASE__DATABASE=skyguard
+      - SKYGUARD_SECURITY__ENABLED=${SECURITY_ENABLED:-false}
+      - SKYGUARD_SECURITY__API_KEY=${API_KEY:-}
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+    ports:
+      - "${WEB_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - skyguard-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: skyguard-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: skyguard
+      POSTGRES_USER: skyguard
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-skyguard}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skyguard -d skyguard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - skyguard-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: skyguard-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - skyguard-net
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  skyguard-net:
+    driver: bridge
