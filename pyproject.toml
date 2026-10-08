@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "SkyGuard - AI Low-Altitude Intelligent Monitoring Platform"
 readme = "README.md"
 requires-python = ">=3.9,<3.13"
-license = { text = "Proprietary" }
+license = { text = "MIT" }
 authors = [
     { name = "SkyGuard Engineering" },
 ]
@@ -16,6 +16,7 @@ keywords = ["ai", "computer-vision", "yolo", "drone", "monitoring", "tracking"]
 classifiers = [
     "Development Status :: 5 - Production/Beta",
     "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
