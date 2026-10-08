@@ -28,6 +28,8 @@ YOLOv11s 单模型在示例图片上的实时检测效果（置信度 83.3%，MP
 
 ![Web Demo 检测效果](docs/screenshots/web-demo-detection.png)
 
+> 📖 **完整 Web 端操作界面与实时测试介绍书见 [docs/PROJECT_INTRO.md](docs/PROJECT_INTRO.md)**（含全部操作界面截图与功能说明）
+
 ---
 
 ## 1. 是什么 / 不是什幺
