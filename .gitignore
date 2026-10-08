@@ -93,6 +93,9 @@ datasets/private/
 archive/
 runs/
 
+# ----- Papers & internal docs (kept locally, not distributed) -----
+paper/
+
 # ----- Model artifacts (tracked via DVC/LFS, not git) -----
 models/current/
 models/pretrained/*.pt
